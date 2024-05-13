@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from lib import schemas
 from lib.auth import get_password_hash
-from lib.crud import create_user, delete_user, get_user
+from lib.crud import create_user, delete_user, get_user, get_or_create_machine, delete_machine
 from lib.db import SessionLocal
 
 
@@ -48,3 +48,17 @@ def test_user(website, test_password):
         db.close()
 
 
+@pytest.fixture
+def test_machine():
+    db = SessionLocal()
+    machine = schemas.MachineCreate(name='Test')
+    try:
+        machine = get_or_create_machine(db, machine)
+    finally:
+        db.close()
+    yield machine
+    db = SessionLocal()
+    try:
+        delete_machine(db, machine.name)
+    finally:
+        db.close()

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from lib import schemas, models
 from lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token,
                       get_current_active_user)
+from lib.crud import get_machines
 from lib.db import SessionLocal, engine, get_db
 
 
@@ -65,6 +66,13 @@ async def read_users_me(
     current_user: Annotated[schemas.User, Depends(get_current_active_user)],
 ) -> schemas.User:
     return current_user
+
+
+@app.get("/machines")
+async def get_machine_list(
+    db: Annotated[Session, Depends(get_db)],
+) -> list[schemas.Machine]:
+    return get_machines(db)
 
 
 @app.get("/")

@@ -31,3 +31,15 @@ class User(UserBase):
 
 class UserInDB(User):
     hashed_password: str
+
+
+class MachineCreate(BaseModel):
+    name: str
+
+
+class Machine(MachineCreate):
+    id: int
+    state: str
+
+    class ConfigDict:
+        from_attributes = True

@@ -1,17 +1,20 @@
 import json
+import pytest
 import requests
 import urllib.parse as urlparse
 import websocket
 
+from lib import schemas
 
-def test_login(website, test_user, test_password):
-    login_uri = '/token'
-    profile_uri = 'users/me'
+
+@pytest.fixture(scope='module')
+def auth_header(website, test_user, test_password):
+    uri = '/token'
     data = {
         'username': test_user.username,
         'password': test_password
     }
-    r = requests.post(urlparse.urljoin(website, login_uri), data=data)
+    r = requests.post(urlparse.urljoin(website, uri), data=data)
 
     assert r.status_code == 200
     data = json.loads(r.content)
@@ -22,11 +25,26 @@ def test_login(website, test_user, test_password):
     header = {
         'Authorization': f'Bearer {data.get("access_token")}'
     }
-    r = requests.get(urlparse.urljoin(website, profile_uri), headers=header)
+    return header
+
+
+def test_login(website, test_user, test_password, auth_header):
+    uri = 'users/me'
+    r = requests.get(urlparse.urljoin(website, uri), headers=auth_header)
     assert r.status_code == 200
     data = json.loads(r.content)
     assert data['username'] == test_user.username
     assert data['email'] == test_user.email
+
+
+def test_get_machine_list(website, test_machine, auth_header):
+    uri = '/machines'
+    r = requests.get(urlparse.urljoin(website, uri), headers=auth_header)
+
+    assert r.status_code == 200
+    data = json.loads(r.content)
+    machines = [schemas.Machine(**machine) for machine in data]
+    assert schemas.Machine(**test_machine.__dict__) in machines
 
 
 def test_get_run_list(website):
@@ -58,13 +76,6 @@ def test_get_ordered_run_list(website):
                      params={
                          'order_by': 'name'
                      })
-
-    assert r.status_code == 200
-
-
-def test_get_machine_list(website):
-    uri = '/v1/api/machines'
-    r = requests.get(urlparse.urljoin(website, uri))
 
     assert r.status_code == 200
 
