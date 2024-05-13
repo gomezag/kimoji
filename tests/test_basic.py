@@ -1,20 +1,32 @@
+import json
 import requests
 import urllib.parse as urlparse
 import websocket
 
-TEST_USER = 'johndoe'
-TEST_PASSWORD = 'secret'
 
-
-def test_login(website):
-    uri = '/login'
+def test_login(website, test_user, test_password):
+    login_uri = '/token'
+    profile_uri = 'users/me'
     data = {
-        'username': TEST_USER,
-        'password': TEST_PASSWORD
+        'username': test_user.username,
+        'password': test_password
     }
-    r = requests.post(urlparse.urljoin(website, uri), data=data)
+    r = requests.post(urlparse.urljoin(website, login_uri), data=data)
 
     assert r.status_code == 200
+    data = json.loads(r.content)
+
+    assert type(data.get('access_token')) == str
+    assert data.get('token_type') == 'bearer'
+
+    header = {
+        'Authorization': f'Bearer {data.get("access_token")}'
+    }
+    r = requests.get(urlparse.urljoin(website, profile_uri), headers=header)
+    assert r.status_code == 200
+    data = json.loads(r.content)
+    assert data['username'] == test_user.username
+    assert data['email'] == test_user.email
 
 
 def test_get_run_list(website):

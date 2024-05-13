@@ -1,0 +1,7 @@
+python-jose
+websockets
+fastapi
+uvicorn
+passlib[argon2]
+argon2-cffi
+sqlalchemy
