@@ -37,21 +37,26 @@ def test_login(website, test_user, test_password, auth_header):
     assert data['email'] == test_user.email
 
 
-def test_get_machine_list(website, test_machine, auth_header):
+def test_get_machine_list(website, machine, auth_header):
     uri = '/machines'
     r = requests.get(urlparse.urljoin(website, uri), headers=auth_header)
 
     assert r.status_code == 200
     data = json.loads(r.content)
     machines = [schemas.Machine(**machine) for machine in data]
-    assert schemas.Machine(**test_machine.__dict__) in machines
+    assert schemas.Machine(**machine.__dict__) in machines
 
 
-def test_get_run_list(website):
-    uri = '/v1/api/runs'
-    r = requests.get(urlparse.urljoin(website, uri))
-
+def test_get_run_list(db, website, simulation_runs, auth_header):
+    uri = 'runs'
+    r = requests.get(urlparse.urljoin(website, uri), headers=auth_header)
     assert r.status_code == 200
+    data = json.loads(r.content)
+    runs = [schemas.SimulationRun(**run) for run in data]
+
+    for run in simulation_runs:
+        db.refresh(run)
+        assert schemas.SimulationRun(**run.__dict__) in runs
 
 
 def test_get_filtered_run_list(website):

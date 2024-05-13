@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 
 from .db import Base
 
@@ -19,3 +20,13 @@ class Machine(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, index=True, unique=True)
     state = Column(String)
+
+
+class SimulationRun(Base):
+    __tablename__ = "simulation_runs"
+
+    id = Column(Integer, primary_key=True)
+    machine_id = Column(Integer, ForeignKey("machines.id"))
+    machine = relationship("Machine")
+    loss = Column(Float, default=-1)
+    name = Column(String, unique=True)

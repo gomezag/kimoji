@@ -63,3 +63,41 @@ def delete_machine(db: Session, machine_name: str) -> None:
     machine = get_machine(db, machine_name)
     db.delete(machine)
     db.commit()
+
+
+def get_simulation_run(db: Session, name: str):
+    run = db.query(models.SimulationRun).filter(models.SimulationRun.name == name).first()
+    if run:
+        return run
+
+
+def get_simulation_runs(db: Session):
+    machines = db.query(models.SimulationRun).all()
+    if machines:
+        return machines
+    else:
+        return []
+
+
+def create_simulation_run(db: Session, name: str, machine: models.Machine):
+    run = models.SimulationRun(machine_id=machine.id, loss=-1, name=name)
+    db.add(run)
+    db.commit()
+    db.refresh(run)
+    return run
+
+
+def get_or_create_simulation_run(db: Session, name: str, machine: models.Machine):
+    try:
+        simulation_run = create_simulation_run(db, name, machine)
+    except IntegrityError:
+        db.rollback()
+        simulation_run = get_simulation_run(db, name)
+
+    return simulation_run
+
+
+def delete_simulation_run(db: Session, run: schemas.SimulationRun):
+    db_user = get_simulation_run(db, run.name)
+    db.delete(db_user)
+    db.commit()

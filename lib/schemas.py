@@ -43,3 +43,12 @@ class Machine(MachineCreate):
 
     class ConfigDict:
         from_attributes = True
+
+
+class SimulationRunCreate(BaseModel):
+    name: str
+    machine_id: int
+
+
+class SimulationRun(SimulationRunCreate):
+    loss: float
