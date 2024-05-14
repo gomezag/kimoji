@@ -5,6 +5,7 @@ import urllib.parse as urlparse
 import websocket
 
 from lib import schemas
+from lib.crud import delete_simulation_run
 
 
 @pytest.fixture(scope='module')
@@ -85,22 +86,42 @@ def test_get_ordered_run_list(website, simulation_runs, auth_header, run_names):
     assert [e for e in names if e in run_names] == sorted(run_names, reverse=True)
 
 
-def test_post_run(website):
-    uri = '/v1/api/run'
+def test_post_run(db, website, machine, auth_header):
+    uri = 'runs'
     data = {
-        'machine': '1',
-        'simulation': 'test_sim'
+        'machine_name': machine.name,
+        'name': 'test_sim'
     }
-    r = requests.post(urlparse.urljoin(website, uri), data)
+    r = requests.post(urlparse.urljoin(website, uri), data, headers=auth_header)
 
     assert r.status_code == 200
+    try:
+        run = schemas.SimulationRunFull(**json.loads(r.content))
+        assert run.id
+        assert run.name == data['name']
+        assert run.machine.name == data['machine_name']
+
+        r = requests.get(urlparse.urljoin(website, uri), headers=auth_header)
+        assert r.status_code == 200
+        response_data = json.loads(r.content)
+        runs = [schemas.SimulationRun(**el) for el in response_data]
+        assert schemas.SimulationRun(**run.__dict__) in runs
+    finally:
+        delete_simulation_run(db, data['name'])
 
 
-def test_get_run_detail(website):
-    uri = '/v1/api/run/test_sim'
-    r = requests.get(urlparse.urljoin(website, uri))
+def test_get_run_detail(auth_header, simulation_runs, website):
+    uri = 'run'
+    params = {
+        'sim_name': 'Test1'
+    }
+    r = requests.get(urlparse.urljoin(website, uri), params=params, headers=auth_header)
 
     assert r.status_code == 200
+    run = schemas.SimulationRunFull(**json.loads(r.content))
+    assert run.id
+    assert run.name == 'Test1'
+    assert run.machine.name
 
 
 def test_subscribe_to_run_socket(wss):

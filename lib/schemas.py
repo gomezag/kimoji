@@ -52,3 +52,8 @@ class SimulationRunCreate(BaseModel):
 
 class SimulationRun(SimulationRunCreate):
     loss: float
+
+
+class SimulationRunFull(SimulationRun):
+    id: int
+    machine: Machine | None = None

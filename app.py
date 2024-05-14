@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from lib import schemas, models
 from lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token,
                       get_current_active_user, is_authenticated)
-from lib.crud import get_machines, get_simulation_runs
+from lib.crud import create_simulation_run, get_machine, get_machines, get_simulation_run, get_simulation_runs
 from lib.db import SessionLocal, engine, get_db
 
 
@@ -83,6 +83,26 @@ async def get_simulation_runs_list(
     token_data: Annotated[schemas.TokenData, Depends(is_authenticated)]
 ) -> list[schemas.SimulationRun]:
     return get_simulation_runs(db, **request.query_params)
+
+
+@app.post("/runs")
+async def post_simulation_run(
+        db: Annotated[Session, Depends(get_db)],
+        name: Annotated[str, Form()],
+        machine_name: Annotated[str, Form()],
+        token_data: Annotated[schemas.TokenData, Depends(is_authenticated)]
+) -> schemas.SimulationRunFull:
+    machine = get_machine(db, machine_name)
+    return create_simulation_run(db, name, machine)
+
+
+@app.get("/run")
+async def get_simulation_run_detail(
+        token_data: Annotated[schemas.TokenData, Depends(is_authenticated)],
+        db: Annotated[Session, Depends(get_db)],
+        sim_name: str
+) -> schemas.SimulationRunFull:
+    return get_simulation_run(db, sim_name)
 
 
 @app.get("/")
