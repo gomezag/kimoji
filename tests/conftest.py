@@ -12,7 +12,6 @@ from lib.db import SessionLocal
 
 HOSTNAME = 'localhost'
 API_PORT = '8000'
-WS_PORT = '3000'
 
 
 @pytest.fixture(scope='session')
@@ -29,7 +28,7 @@ def website():
 
 @pytest.fixture(scope='session')
 def wss():
-    return "".join(['wss://', HOSTNAME, ':', WS_PORT])
+    return "".join(['ws://', HOSTNAME, ':', API_PORT])
 
 
 @pytest.fixture(scope='session')
@@ -47,7 +46,6 @@ def test_user(db, website, test_password):
         user = get_user(db, username='johndoe')
 
     yield user
-    db = SessionLocal()
     delete_user(db, user)
 
 

@@ -124,12 +124,17 @@ def test_get_run_detail(auth_header, simulation_runs, website):
     assert run.machine.name
 
 
-def test_subscribe_to_run_socket(wss):
-    uri = '/v1/api/run/test_sim'
+def test_subscribe_to_run_socket(auth_header, wss, simulation_runs):
+    uri = f'ws/{simulation_runs[0].id}'
     ws = websocket.WebSocket()
-    ws.connect(urlparse.urljoin(websocket, uri))
+    ws.connect(urlparse.urljoin(wss, uri))
 
     try:
-        ws.recv()
+        losses = []
+        for i in range(3):
+            r = ws.recv()
+            assert float(r)
+            losses.append(r)
+            assert len(losses) == i+1
     finally:
         ws.close()

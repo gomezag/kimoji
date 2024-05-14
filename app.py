@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ from lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_acc
                       get_current_active_user, is_authenticated)
 from lib.crud import create_simulation_run, get_machine, get_machines, get_simulation_run, get_simulation_runs
 from lib.db import SessionLocal, engine, get_db
+from lib.ws import manager
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -108,3 +109,13 @@ async def get_simulation_run_detail(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.websocket("/ws/{run_id}")
+async def simulation_run_ws(websocket: WebSocket, run_id: int):
+    await manager.connect(websocket, run_id)
+    try:
+        while True:
+            await websocket.receive()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)

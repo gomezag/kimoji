@@ -122,6 +122,16 @@ def get_or_create_simulation_run(db: Session, name: str, machine: models.Machine
     return simulation_run
 
 
+def edit_simulation_run(db: Session, sim_id: int, value: str or int, key: str):
+    run = db.query(models.SimulationRun).filter(models.SimulationRun.id == sim_id).first()
+    if run:
+        setattr(run, key, value)
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+        return run
+
+
 def delete_simulation_run(db: Session, run_name: str):
     db_user = get_simulation_run(db, run_name)
     db.delete(db_user)
