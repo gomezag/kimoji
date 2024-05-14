@@ -65,16 +65,41 @@ def delete_machine(db: Session, machine_name: str) -> None:
     db.commit()
 
 
-def get_simulation_run(db: Session, name: str):
-    run = db.query(models.SimulationRun).filter(models.SimulationRun.name == name).first()
-    if run:
-        return run
+def get_simulation_run(db: Session, value: str or int, key: str = 'name'):
+    attribute = getattr(models.SimulationRun, key, None)
+    if attribute:
+        run = db.query(models.SimulationRun).filter(attribute == value).first()
+        if run:
+            return run
 
 
-def get_simulation_runs(db: Session):
-    machines = db.query(models.SimulationRun).all()
-    if machines:
-        return machines
+def get_simulation_runs(db: Session, **kwargs):
+    query = db.query(models.SimulationRun)
+    order_by = None
+    if kwargs:
+        for name, value in kwargs.items():
+            if name == 'order_by':
+                if value.startswith('-'):
+                    direction = 'desc'
+                    value = value[1:]
+                else:
+                    direction = 'asc'
+                attribute = getattr(models.SimulationRun, value)
+                if direction == 'asc':
+                    order_by = attribute.asc()
+                else:
+                    order_by = attribute.desc()
+            else:
+                attribute = getattr(models.SimulationRun, name)
+                if attribute:
+                    query = query.filter(attribute.contains(value))
+
+        if order_by is not None:
+            query = query.order_by(order_by)
+
+    runs = query.all()
+    if runs:
+        return runs
     else:
         return []
 
@@ -97,7 +122,7 @@ def get_or_create_simulation_run(db: Session, name: str, machine: models.Machine
     return simulation_run
 
 
-def delete_simulation_run(db: Session, run: schemas.SimulationRun):
-    db_user = get_simulation_run(db, run.name)
+def delete_simulation_run(db: Session, run_name: str):
+    db_user = get_simulation_run(db, run_name)
     db.delete(db_user)
     db.commit()

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from lib import schemas, models
 from lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token,
-                      get_current_active_user)
+                      get_current_active_user, is_authenticated)
 from lib.crud import get_machines, get_simulation_runs
 from lib.db import SessionLocal, engine, get_db
 
@@ -71,6 +71,7 @@ async def read_users_me(
 @app.get("/machines")
 async def get_machine_list(
     db: Annotated[Session, Depends(get_db)],
+    token_data: Annotated[schemas.TokenData, Depends(is_authenticated)]
 ) -> list[schemas.Machine]:
     return get_machines(db)
 
@@ -78,8 +79,10 @@ async def get_machine_list(
 @app.get("/runs")
 async def get_simulation_runs_list(
     db: Annotated[Session, Depends(get_db)],
+    request: Request,
+    token_data: Annotated[schemas.TokenData, Depends(is_authenticated)]
 ) -> list[schemas.SimulationRun]:
-    return get_simulation_runs(db)
+    return get_simulation_runs(db, **request.query_params)
 
 
 @app.get("/")

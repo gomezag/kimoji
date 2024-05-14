@@ -59,30 +59,30 @@ def test_get_run_list(db, website, simulation_runs, auth_header):
         assert schemas.SimulationRun(**run.__dict__) in runs
 
 
-def test_get_filtered_run_list(website):
-    uri = '/v1/api/runs'
-    r = requests.get(
-                         urlparse.urljoin(website, uri),
-                         params={
-                             'filters': [{
-                                 'field': 'name',
-                                 'type': 'contains',
-                                 'keyword': 'Windows'
-                                }
-                             ]
-                         }
+def test_get_filtered_run_list(db, website, simulation_runs, auth_header, run_names):
+    uri = '/runs'
+    lookup = 'Test'
+    r = requests.get(urlparse.urljoin(website, uri),
+                     params={'name': lookup},
+                     headers=auth_header
                      )
     assert r.status_code == 200
+    data = json.loads(r.content)
+    names = [schemas.SimulationRun(**run).name for run in data]
+    assert [e for e in names if e in run_names] == [e for e in run_names if lookup in e]
 
 
-def test_get_ordered_run_list(website):
-    uri = '/v1/api/runs'
+def test_get_ordered_run_list(website, simulation_runs, auth_header, run_names):
+    uri = 'runs'
+    params = {'order_by': '-name'}
     r = requests.get(urlparse.urljoin(website, uri),
-                     params={
-                         'order_by': 'name'
-                     })
+                     params=params,
+                     headers=auth_header)
 
     assert r.status_code == 200
+    data = json.loads(r.content)
+    names = [el['name'] for el in data]
+    assert [e for e in names if e in run_names] == sorted(run_names, reverse=True)
 
 
 def test_post_run(website):

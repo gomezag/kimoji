@@ -60,9 +60,12 @@ def machine(db):
 
 
 @pytest.fixture
-def simulation_runs(db, machine):
-    n_runs = 2
-    run_names = [f'Test{n}' for n in range(n_runs)]
+def run_names():
+    return ['Foo', 'Test2', 'Test1']
+
+
+@pytest.fixture
+def simulation_runs(db, machine, run_names):
     runs = []
     for name in run_names:
         run = get_or_create_simulation_run(db, name, machine)
@@ -71,4 +74,4 @@ def simulation_runs(db, machine):
     yield runs
 
     for run in runs:
-        delete_simulation_run(db, run)
+        delete_simulation_run(db, run.name)
