@@ -1,5 +1,4 @@
 name: 'Test application'
-description: 'Run pytest on a test server'
 
 on:
   push:
@@ -8,7 +7,8 @@ on:
   pull_request:
     branches:
       - main
-
+  workflow_dispatch :
+  
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
