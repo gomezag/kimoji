@@ -59,10 +59,14 @@ class SimulationRunChannel:
 
     async def broadcast_sim_loss(self):
         run = edit_simulation_run(self._db, self.simulation_id, random.random()*100, 'loss')
-        message = "{:.2f}".format(run.loss)
-        if message:
+        if run:
+            message = "{:.2f}".format(run.loss)
+            if message:
+                for connection in self.active_connections:
+                    await connection.send_text(message)
+        else:
             for connection in self.active_connections:
-                await connection.send_text(message)
+                connection.close(1001, reason='The simulation run has been deleted')
 
 
 class SimulationRunBroadcaster(threading.Thread):
