@@ -35,4 +35,5 @@ jobs:
       uses: addnab/docker-run-action@v3
       with:
         image: kimoji:latest
-        options: --name kimoji
+        options: --name kimoji -v ${{ github.workspace }}:/code/junit
+        run:
