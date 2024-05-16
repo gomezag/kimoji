@@ -35,9 +35,4 @@ jobs:
       uses: addnab/docker-run-action@v3
       with:
         image: kimoji:latest
-        options: -d --name my-app-container
-
-    - name: Test Docker container
-      run: |
-        docker ps -a
-        docker logs my-app-container
+        options: --name kimoji
