@@ -1,0 +1,30 @@
+name: 'Test application'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch :
+  
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r tests/requirements.txt
+
+    - name: Run tests
+      run: |
+        mkdir -p db
+        fastapi run --port 8000 kimoji/app.py & 1>/dev/null 2>/dev/null
+        python start_db.py
+        pytest tests

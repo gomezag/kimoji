@@ -1,13 +1,12 @@
 import pytest
-import requests
 
 from sqlalchemy.exc import IntegrityError
 
-from lib import schemas
-from lib.auth import get_password_hash
-from lib.crud import create_user, delete_user, get_user, get_or_create_machine, delete_machine
-from lib.crud import get_or_create_simulation_run, create_simulation_run, delete_simulation_run
-from lib.db import SessionLocal
+from kimoji.lib import schemas
+from kimoji.lib.auth import get_password_hash
+from kimoji.lib.crud import create_user, delete_user, get_user, get_or_create_machine, delete_machine
+from kimoji.lib.crud import get_or_create_simulation_run, delete_simulation_run
+from kimoji.lib.db import SessionLocal
 
 
 HOSTNAME = 'localhost'
