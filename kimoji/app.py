@@ -6,12 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from lib import schemas, models
-from lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token,
-                      get_current_active_user, is_authenticated)
-from lib.crud import create_simulation_run, get_machine, get_machines, get_simulation_run, get_simulation_runs
-from lib.db import SessionLocal, engine, get_db
-from lib.ws import manager
+from kimoji.lib import models, schemas
+from kimoji.lib.auth import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token,
+                             get_current_active_user, is_authenticated)
+from kimoji.lib.crud import get_machine, get_machines
+from kimoji.lib.crud import create_simulation_run, get_simulation_run, get_simulation_runs
+from kimoji.lib.db import SessionLocal, engine, get_db
+from kimoji.lib.ws import manager
 
 
 models.Base.metadata.create_all(bind=engine)

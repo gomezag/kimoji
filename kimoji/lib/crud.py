@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from . import models, schemas
+from kimoji.lib import models, schemas
 
 
 def get_user(db: Session, username: str):
@@ -73,31 +73,35 @@ def get_simulation_run(db: Session, value: str or int, key: str = 'name'):
             return run
 
 
-def get_simulation_runs(db: Session, **kwargs):
-    query = db.query(models.SimulationRun)
+def get_simulation_runs(db: Session, query: schemas.SimulationRunQueryDict = None):
+    db_query = db.query(models.SimulationRun)
     order_by = None
-    if kwargs:
-        for name, value in kwargs.items():
-            if name == 'order_by':
-                if value.startswith('-'):
-                    direction = 'desc'
-                    value = value[1:]
+    if query:
+        for name, value in query.model_dump().items():
+            if value:
+                if name == 'order_by':
+                    if value.startswith('-'):
+                        direction = 'desc'
+                        value = value[1:]
+                    else:
+                        direction = 'asc'
+                    attribute = getattr(models.SimulationRun, value)
+                    if direction == 'asc':
+                        order_by = attribute.asc()
+                    else:
+                        order_by = attribute.desc()
                 else:
-                    direction = 'asc'
-                attribute = getattr(models.SimulationRun, value)
-                if direction == 'asc':
-                    order_by = attribute.asc()
-                else:
-                    order_by = attribute.desc()
-            else:
-                attribute = getattr(models.SimulationRun, name)
-                if attribute:
-                    query = query.filter(attribute.contains(value))
+                    attribute = getattr(models.SimulationRun, name)
+                    if attribute:
+                        if type(value) == str:
+                            db_query = db_query.filter(attribute.contains(value))
+                        else:
+                            db_query = db_query.filter(attribute == value)
 
         if order_by is not None:
-            query = query.order_by(order_by)
+            db_query = db_query.order_by(order_by)
 
-    runs = query.all()
+    runs = db_query.all()
     if runs:
         return runs
     else:
@@ -105,11 +109,12 @@ def get_simulation_runs(db: Session, **kwargs):
 
 
 def create_simulation_run(db: Session, name: str, machine: models.Machine):
-    run = models.SimulationRun(machine_id=machine.id, loss=-1, name=name)
-    db.add(run)
-    db.commit()
-    db.refresh(run)
-    return run
+    if machine:
+        run = models.SimulationRun(machine_id=machine.id, loss=-1, name=name, state='CREATED')
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+        return run
 
 
 def get_or_create_simulation_run(db: Session, name: str, machine: models.Machine):

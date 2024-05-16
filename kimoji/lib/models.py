@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
-from .db import Base
+from kimoji.lib.db import Base
 
 
 class User(Base):

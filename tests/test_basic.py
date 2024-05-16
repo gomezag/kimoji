@@ -4,8 +4,8 @@ import requests
 import urllib.parse as urlparse
 import websocket
 
-from lib import schemas
-from lib.crud import delete_simulation_run
+from kimoji.lib import schemas
+from kimoji.lib.crud import delete_simulation_run, edit_simulation_run
 
 
 @pytest.fixture(scope='module')

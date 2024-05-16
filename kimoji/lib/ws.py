@@ -5,8 +5,8 @@ import time
 
 from fastapi import HTTPException, WebSocket, status
 
-from lib.crud import get_simulation_run, edit_simulation_run
-from lib.db import SessionLocal
+from kimoji.lib.crud import get_simulation_run, edit_simulation_run
+from kimoji.lib.db import SessionLocal
 
 
 class ConnectionManager:
