@@ -84,7 +84,7 @@ async def get_simulation_runs_list(
     request: Request,
     token_data: Annotated[schemas.TokenData, Depends(is_authenticated)]
 ) -> list[schemas.SimulationRun]:
-    return get_simulation_runs(db, **request.query_params)
+    return get_simulation_runs(db, query=schemas.SimulationRunQueryDict(**request.query_params))
 
 
 @app.post("/runs")

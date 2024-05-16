@@ -52,8 +52,16 @@ class SimulationRunCreate(BaseModel):
 
 class SimulationRun(SimulationRunCreate):
     loss: float
+    state: str
 
 
 class SimulationRunFull(SimulationRun):
     id: int
     machine: Machine | None = None
+
+
+class SimulationRunQueryDict(BaseModel):
+    name: Optional[str] = None
+    loss: Optional[str] = None
+    state: Optional[str] = None
+    order_by: Optional[str] = None

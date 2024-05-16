@@ -71,6 +71,15 @@ def test_get_filtered_run_list(db, website, simulation_runs, auth_header, run_na
     data = json.loads(r.content)
     names = [schemas.SimulationRun(**run).name for run in data]
     assert [e for e in names if e in run_names] == [e for e in run_names if lookup in e]
+    edit_simulation_run(db, simulation_runs[0].id, 'pending', 'state')
+    db.refresh(simulation_runs[0])
+    r = requests.get(urlparse.urljoin(website, uri),
+                     params={'state': 'pending'},
+                     headers=auth_header
+                     )
+    assert r.status_code == 200
+    data = json.loads(r.content)
+    assert schemas.SimulationRun(**data[0]) == schemas.SimulationRun(**simulation_runs[0].__dict__)
 
 
 def test_get_ordered_run_list(website, simulation_runs, auth_header, run_names):

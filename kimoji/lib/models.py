@@ -30,3 +30,4 @@ class SimulationRun(Base):
     machine = relationship("Machine")
     loss = Column(Float, default=-1)
     name = Column(String, unique=True)
+    state = Column(String)
