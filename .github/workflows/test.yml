@@ -29,6 +29,7 @@ jobs:
           TEST=True
         tags: kimoji:latest
         push: false
+        load: true
 
     - name: Run Docker container
       uses: addnab/docker-run-action@v3
