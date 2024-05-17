@@ -17,4 +17,4 @@ VOLUME /db
 RUN if [ -n "$TEST" ]; then pip install --no-cache-dir --upgrade -r /code/tests/requirements.txt ; fi
 EXPOSE 8000:8000
 
-ENTRYPOINT ["/code/entrypoint.sh", "$TEST"]
+ENTRYPOINT /code/entrypoint.sh "$TEST"

@@ -24,7 +24,7 @@ jobs:
 
     - name: Run tests
       run: |
-        mkdir /db/
+        mkdir -p db
         fastapi run --port 8000 kimoji/app.py & 1>/dev/null 2>/dev/null
         python start_db.py
         pytest tests

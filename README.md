@@ -4,8 +4,8 @@ Service to track jobs on remote machines
 
 ```
 mkdir db
-docker build -t kimoji . && 
-docker run -p 8000:8000 -v %cd%\db:/db/ kimoji 
+docker build -t kimoji . &&
+docker run -p 8000:8000 -v db:/code/db/ kimoji 
 ```
 To test it, run
 ```
