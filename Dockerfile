@@ -1,7 +1,7 @@
 FROM python:3.11
 
 WORKDIR /code
-ARG TEST=''
+ARG TEST
 
 COPY ./requirements.txt /code/requirements.txt
 
@@ -14,7 +14,7 @@ COPY ./tests /code/tests
 
 VOLUME /db
 
-RUN pip install --no-cache-dir --upgrade -r /code/tests/requirements.txt
+RUN if [ -n "$TEST" ]; then pip install --no-cache-dir --upgrade -r /code/tests/requirements.txt ; fi
 EXPOSE 8000:8000
 
 ENTRYPOINT ["/code/entrypoint.sh", "$TEST"]

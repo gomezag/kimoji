@@ -17,23 +17,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r tests/requirements.txt
 
-    - name: Build Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        file: ./Dockerfile
-        build-args: |
-          TEST=True
-        tags: kimoji:latest
-        push: false
-        load: true
-
-    - name: Run Docker container
-      uses: addnab/docker-run-action@v3
-      with:
-        image: kimoji:latest
-        options: --name kimoji -v ${{ github.workspace }}:/code/junit
-        run:
+    - name: Run tests
+      run: |
+        mkdir /db/
+        fastapi run --port 8000 kimoji/app.py & 1>/dev/null 2>/dev/null
+        python start_db.py
+        pytest tests
