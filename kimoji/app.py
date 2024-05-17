@@ -1,5 +1,8 @@
+import logging
 from datetime import timedelta
+import time
 from typing import Annotated
+from logging.config import dictConfig
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,10 +16,10 @@ from kimoji.lib.crud import get_machine, get_machines
 from kimoji.lib.crud import create_simulation_run, get_simulation_run, get_simulation_runs
 from kimoji.lib.db import SessionLocal, engine, get_db
 from kimoji.lib.ws import manager
-
+from kimoji.lib.log_conf import log_config
 
 models.Base.metadata.create_all(bind=engine)
-
+dictConfig(log_config)
 app = FastAPI()
 
 origins = [
@@ -114,9 +117,20 @@ async def root():
 
 @app.websocket("/ws/{run_id}")
 async def simulation_run_ws(websocket: WebSocket, run_id: int):
-    await manager.connect(websocket, run_id)
+    channel = await manager.connect(websocket, run_id)
     try:
         while True:
-            await websocket.receive()
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+            await websocket.receive_text()
+            await websocket.send_text(str(channel.last_loss))
+    except (RuntimeError, WebSocketDisconnect):
+        await manager.disconnect(websocket)
+
+
+@app.get("/channels")
+async def channels_get():
+    active_channels = {
+        str(channel.simulation_id): {'sockets': [str(conn) for conn in channel.active_connections]}
+        for channel in manager.active_channels
+    }
+
+    return active_channels
