@@ -7,7 +7,7 @@ from kimoji.lib.crud import create_user, create_machine, get_user, get_machines
 from kimoji.lib.db import SessionLocal
 from kimoji.lib.schemas import UserCreate, MachineCreate
 
-logger = logging.getLogger('starter')
+logger = logging.getLogger('kimoji')
 
 if __name__ == '__main__':
     logger.info('Running starter')

@@ -139,11 +139,38 @@ def test_subscribe_to_run_socket(auth_header, wss, simulation_runs):
     ws.connect(urlparse.urljoin(wss, uri))
 
     try:
-        losses = []
         for i in range(3):
+            ws.send('*')
             r = ws.recv()
             assert float(r)
-            losses.append(r)
-            assert len(losses) == i+1
     finally:
         ws.close()
+
+
+def test_subscribe_many_to_run_socket(auth_header, wss, simulation_runs):
+    uri = f'ws/{simulation_runs[0].id}'
+    n_listeners = 10
+    sockets = []
+    try:
+        for i in range(n_listeners):
+            ws = websocket.WebSocket()
+            ws.connect(urlparse.urljoin(wss, uri))
+            sockets.append(ws)
+
+        for ws in sockets:
+            ws.send('*')
+            assert float(ws.recv())
+
+        uri = f'ws/{simulation_runs[1].id}'
+        ws = websocket.WebSocket()
+        ws.connect(urlparse.urljoin(wss, uri))
+        sockets.append(ws)
+        ws.send('*')
+        assert float(ws.recv())
+
+    finally:
+        for socket in sockets:
+            try:
+                socket.close()
+            except Exception:
+                pass
